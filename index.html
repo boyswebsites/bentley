@@ -1,1322 +1,450 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bentley Konrad #28 - U13 Baseball Showcase & Arcade</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Teko for athletic numbers/headers, Rajdhani & Inter for UI -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Rajdhani:wght@500;600;700&family=Teko:wght@600;700;800&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        turf: {
-                            400: '#34d399',
-                            500: '#10b981',
-                            600: '#059669',
-                            700: '#047857',
-                            900: '#064e3b',
-                        },
-                        gold: {
-                            400: '#fbbf24',
-                            500: '#f59e0b',
-                            600: '#d97706',
-                        },
-                        field: {
-                            dark: '#0a0f1d',
-                            card: '#131c31',
-                            border: '#1f2d4d'
-                        }
-                    },
-                    fontFamily: {
-                        teko: ['Teko', 'sans-serif'],
-                        rajdhani: ['Rajdhani', 'sans-serif'],
-                        sans: ['Inter', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        /* Custom Stadium Lighting & Mesh Overlay */
-        body {
-            background-color: #080c16;
-            background-image: 
-                radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.15) 0%, transparent 60%),
-                radial-gradient(circle at 80% 20%, rgba(245, 158, 11, 0.08) 0%, transparent 40%),
-                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-            background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
-            color: #f1f5f9;
-        }
-
-        /* Glassmorphism Cards */
-        .glass-card {
-            background: rgba(19, 28, 49, 0.85);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        }
-
-        .glass-card-glow {
-            background: rgba(19, 28, 49, 0.9);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
-        }
-
-        /* Glowing text & borders */
-        .glow-text-green {
-            text-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
-        }
-
-        .glow-text-gold {
-            text-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
-        }
-
-        /* Dynamic Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #080c16;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #10b981;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #059669;
-        }
-
-        /* Jersey Stitching Effect */
-        .jersey-badge {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            border: 3px solid #f59e0b;
-            box-shadow: inset 0 0 10px rgba(245, 158, 11, 0.4), 0 0 20px rgba(0,0,0,0.8);
-            position: relative;
-        }
-
-        /* Custom Animations */
-        @keyframes pulseGlow {
-            0%, 100% { opacity: 0.8; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.03); }
-        }
-        .pulse-glow {
-            animation: pulseGlow 3s infinite ease-in-out;
-        }
-
-        /* Mini-game Canvas styling */
-        #gameCanvas {
-            touch-action: none;
-            background: radial-gradient(circle at 50% 30%, #1e293b 0%, #020617 100%);
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Home Run Derby Championship</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body { background: #1a1a24; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; color: #fff; }
+    #game-container { position: relative; width: 800px; height: 600px; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 12px 30px rgba(0,0,0,0.6); }
+    canvas { width: 100%; height: 100%; display: block; }
+    .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 15, 25, 0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 1; transition: opacity 0.3s; z-index: 10; }
+    .overlay.hidden { opacity: 0; pointer-events: none; }
+    h1 { font-size: 3rem; margin-bottom: 10px; color: #f59e0b; text-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
+    p { font-size: 1.2rem; margin-bottom: 25px; color: #cbd5e1; }
+    .btn { padding: 14px 32px; font-size: 1.2rem; font-weight: bold; color: #fff; background: #2563eb; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4); }
+    .btn:hover { background: #1d4ed8; transform: translateY(-2px); }
+    .btn:active { transform: translateY(0); }
+    #hud { position: absolute; top: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; pointer-events: none; font-size: 1.2rem; font-weight: bold; text-shadow: 2px 2px 4px #000; z-index: 5; }
+    .hud-card { background: rgba(0,0,0,0.6); padding: 8px 16px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); }
+  </style>
 </head>
-<body class="font-sans antialiased selection:bg-turf-500 selection:text-white min-h-screen flex flex-col justify-between">
-
-    <!-- Top Navigation Header -->
-    <header class="sticky top-0 z-50 glass-card border-b border-slate-800 px-4 lg:px-8 py-3">
-        <div class="max-w-7xl mx-auto flex items-center justify-between">
-            <!-- Brand Logo -->
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-gold-500 to-turf-600 flex items-center justify-center font-teko text-2xl font-bold text-slate-950 shadow-md">
-                    28
-                </div>
-                <div>
-                    <h1 class="font-teko text-2xl lg:text-3xl tracking-wide uppercase font-bold leading-none text-white tracking-wider flex items-center gap-2">
-                        <span id="navPlayerName">Bentley Konrad</span>
-                        <span class="text-xs font-sans font-semibold px-2 py-0.5 rounded bg-turf-500/20 text-turf-400 border border-turf-500/30">U13 TRAVEL</span>
-                    </h1>
-                    <p class="text-xs text-slate-400 font-rajdhani uppercase font-semibold tracking-wider">
-                        <span id="navTeamName">Thunder Select</span> • #28 Pitcher & Catcher
-                    </p>
-                </div>
-            </div>
-
-            <!-- Nav Links -->
-            <nav class="hidden md:flex items-center space-x-6 text-sm font-rajdhani uppercase tracking-wider font-semibold text-slate-300">
-                <a href="#profile" class="hover:text-turf-400 transition-colors flex items-center gap-1.5"><i class="fa-solid fa-user-astronaut text-turf-500"></i> Profile</a>
-                <a href="#arsenal" class="hover:text-turf-400 transition-colors flex items-center gap-1.5"><i class="fa-solid fa-baseball text-gold-500"></i> Arsenal & Gear</a>
-                <a href="#arcade" class="hover:text-turf-400 transition-colors flex items-center gap-1.5 text-gold-400"><i class="fa-solid fa-gamepad text-gold-400 animate-bounce"></i> Mini-Game</a>
-                <a href="#stats" class="hover:text-turf-400 transition-colors flex items-center gap-1.5"><i class="fa-solid fa-chart-line text-turf-500"></i> Season Log</a>
-            </nav>
-
-            <!-- Action Controls: Sound Toggle & Customizer -->
-            <div class="flex items-center space-x-3">
-                <button id="audioToggleBtn" onclick="toggleAudio()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-2 transition-all border border-slate-700" title="Toggle Stadium Sound & FX">
-                    <i id="audioIcon" class="fa-solid fa-volume-xmark text-slate-400"></i>
-                    <span id="audioLabel" class="hidden sm:inline">Sound OFF</span>
-                </button>
-                <button onclick="openPersonalizeModal()" class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-turf-600 to-turf-500 hover:from-turf-500 hover:to-turf-400 text-slate-950 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-lg transition-all transform active:scale-95">
-                    <i class="fa-solid fa-pen-to-square"></i>
-                    <span class="hidden sm:inline">Customize</span>
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!-- MAIN CONTENT CONTAINER -->
-    <main class="max-w-7xl mx-auto px-4 lg:px-8 py-8 space-y-12 w-full flex-grow">
-
-        <!-- SECTION 1: HERO HEADER & PLAYER PROFILE CARD -->
-        <section id="profile" class="relative rounded-3xl glass-card overflow-hidden p-6 lg:p-10 border border-slate-700/60">
-            <!-- Background Turf Graphic Effect -->
-            <div class="absolute -right-20 -bottom-20 w-96 h-96 bg-turf-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            <div class="absolute -left-20 -top-20 w-96 h-96 bg-gold-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
-                <!-- Left: Big Jersey Badge & Roles -->
-                <div class="lg:col-span-4 flex flex-col items-center text-center">
-                    <div class="jersey-badge w-48 h-56 rounded-2xl flex flex-col items-center justify-center p-4 relative mb-4 transform hover:scale-105 transition-transform duration-300">
-                        <div class="text-xs font-rajdhani uppercase font-bold tracking-widest text-gold-400">U13 Elite Prospect</div>
-                        <div class="font-teko text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-200 to-slate-400 leading-none glow-text-gold">
-                            28
-                        </div>
-                        <div class="text-sm font-teko uppercase text-turf-400 tracking-wider text-xl" id="badgePlayerName">BENTLEY KONRAD</div>
-                        <div class="absolute top-2 right-2 text-gold-500 text-xs">
-                            <i class="fa-solid fa-star"></i>
-                        </div>
-                        <div class="absolute top-2 left-2 text-gold-500 text-xs">
-                            <i class="fa-solid fa-star"></i>
-                        </div>
-                    </div>
-
-                    <!-- Dual Threat Badges -->
-                    <div class="flex flex-wrap gap-2 justify-center">
-                        <span class="px-3 py-1 rounded-full bg-slate-900/90 text-turf-400 border border-turf-500/40 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
-                            <i class="fa-solid fa-fire text-amber-500"></i> Ace Pitcher (RHP)
-                        </span>
-                        <span class="px-3 py-1 rounded-full bg-slate-900/90 text-gold-400 border border-gold-500/40 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
-                            <i class="fa-solid fa-shield-halved text-gold-400"></i> Iron Wall Catcher
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Right: Bio & Quick Story -->
-                <div class="lg:col-span-8 space-y-6">
-                    <div>
-                        <div class="text-xs font-rajdhani font-bold uppercase tracking-widest text-turf-400 mb-1 flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-turf-500 animate-ping"></span>
-                            Active U13 Season Showcase
-                        </div>
-                        <h2 class="font-teko text-5xl lg:text-6xl uppercase tracking-tight font-extrabold text-white leading-none">
-                            Dominating <span class="text-transparent bg-clip-text bg-gradient-to-r from-turf-400 via-emerald-300 to-gold-400">On The Mound</span> & <span class="text-transparent bg-clip-text bg-gradient-to-r from-gold-400 to-amber-200">Behind The Plate</span>
-                        </h2>
-                        <p class="text-slate-300 text-sm sm:text-base mt-3 leading-relaxed">
-                            Known for electrifying fastball velocity, pinpoint curveball movement, lightning-fast pop time, and unflappable leadership on the diamond. A true dual-threat competitor commanding every inning from pitch #1 to the final out.
-                        </p>
-                    </div>
-
-                    <!-- Key Player Attributes Grid -->
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-                        <div class="bg-slate-900/70 p-3 rounded-xl border border-slate-800">
-                            <p class="text-xs text-slate-400 uppercase font-semibold">Throw / Bat</p>
-                            <p class="font-teko text-2xl text-white font-bold leading-tight">Right / Right</p>
-                        </div>
-                        <div class="bg-slate-900/70 p-3 rounded-xl border border-slate-800">
-                            <p class="text-xs text-slate-400 uppercase font-semibold">Fastball Velocity</p>
-                            <p class="font-teko text-2xl text-turf-400 font-bold leading-tight">72 - 76 <span class="text-xs text-slate-400 font-sans">MPH</span></p>
-                        </div>
-                        <div class="bg-slate-900/70 p-3 rounded-xl border border-slate-800">
-                            <p class="text-xs text-slate-400 uppercase font-semibold">Catcher Pop Time</p>
-                            <p class="font-teko text-2xl text-gold-400 font-bold leading-tight">1.92 <span class="text-xs text-slate-400 font-sans">SEC</span></p>
-                        </div>
-                        <div class="bg-slate-900/70 p-3 rounded-xl border border-slate-800">
-                            <p class="text-xs text-slate-400 uppercase font-semibold">Innings Pitched</p>
-                            <p class="font-teko text-2xl text-emerald-300 font-bold leading-tight">48.2 <span class="text-xs text-slate-400 font-sans">IP</span></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- DYNAMIC STATS DASHBOARD BAR -->
-            <div class="mt-8 pt-6 border-t border-slate-800 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                <div class="bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80 text-center hover:border-turf-500/50 transition-all">
-                    <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">Strikeouts (K)</span>
-                    <div class="font-teko text-4xl text-turf-400 font-bold leading-none mt-1" id="statK">78</div>
-                    <span class="text-[10px] text-emerald-500 font-medium">+12 last weekend</span>
-                </div>
-                <div class="bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80 text-center hover:border-turf-500/50 transition-all">
-                    <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">ERA</span>
-                    <div class="font-teko text-4xl text-white font-bold leading-none mt-1" id="statERA">1.84</div>
-                    <span class="text-[10px] text-slate-400 font-medium">0.98 WHIP</span>
-                </div>
-                <div class="bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80 text-center hover:border-gold-500/50 transition-all">
-                    <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">Caught Stealing %</span>
-                    <div class="font-teko text-4xl text-gold-400 font-bold leading-none mt-1" id="statCS">68%</div>
-                    <span class="text-[10px] text-amber-500 font-medium">17 / 25 Runners</span>
-                </div>
-                <div class="bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80 text-center hover:border-turf-500/50 transition-all">
-                    <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">Batting Avg (.AVG)</span>
-                    <div class="font-teko text-4xl text-white font-bold leading-none mt-1" id="statAVG">.412</div>
-                    <span class="text-[10px] text-emerald-400 font-medium">1.105 OPS</span>
-                </div>
-                <div class="bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80 text-center hover:border-gold-500/50 transition-all">
-                    <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">Fielding %</span>
-                    <div class="font-teko text-4xl text-gold-400 font-bold leading-none mt-1" id="statFP">.986</div>
-                    <span class="text-[10px] text-slate-400 font-medium">1 Error in 142 chances</span>
-                </div>
-                <div class="bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80 text-center hover:border-turf-500/50 transition-all">
-                    <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">Arcade Highscore</span>
-                    <div class="font-teko text-4xl text-turf-400 font-bold leading-none mt-1" id="statHighScore">0</div>
-                    <span class="text-[10px] text-turf-400 font-medium"><a href="#arcade" class="underline">Play Game</a></span>
-                </div>
-            </div>
-        </section>
-
-        <!-- SECTION 2: PITCHER ARSENAL & CATCHER COMMANDER & GEAR LOCKER -->
-        <section id="arsenal" class="space-y-8">
-            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-                <div>
-                    <span class="text-xs font-rajdhani font-bold uppercase tracking-widest text-gold-400">Tactical Breakdown</span>
-                    <h3 class="font-teko text-4xl font-black text-white uppercase tracking-wide">Dual-Role Mastery & Gear Locker</h3>
-                </div>
-                <div class="flex items-center space-x-2 bg-slate-900/80 p-1 rounded-xl border border-slate-800 text-xs font-rajdhani font-bold">
-                    <button id="tabPitchingBtn" onclick="switchArsenalTab('pitching')" class="px-4 py-2 rounded-lg bg-turf-500 text-slate-950 uppercase tracking-wider font-bold transition-all">Pitcher Arsenal</button>
-                    <button id="tabCatchingBtn" onclick="switchArsenalTab('catching')" class="px-4 py-2 rounded-lg text-slate-400 hover:text-white uppercase tracking-wider font-bold transition-all">Catcher Metrics</button>
-                    <button id="tabLockerBtn" onclick="switchArsenalTab('locker')" class="px-4 py-2 rounded-lg text-slate-400 hover:text-white uppercase tracking-wider font-bold transition-all">Gear Locker</button>
-                </div>
-            </div>
-
-            <!-- Tab 1: Pitching Arsenal Showcase -->
-            <div id="tabPitching" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <!-- Pitch Trajectory Simulator Canvas -->
-                <div class="lg:col-span-7 glass-card p-6 rounded-2xl space-y-4">
-                    <div class="flex items-center justify-between">
-                        <h4 class="font-teko text-2xl text-white uppercase font-bold flex items-center gap-2">
-                            <i class="fa-solid fa-compass-drafting text-turf-400"></i> Interactive Pitch Trajectory Preview
-                        </h4>
-                        <span class="text-xs text-slate-400 font-mono">Select Pitch Below</span>
-                    </div>
-
-                    <!-- Canvas Trajectory Display -->
-                    <div class="relative rounded-xl overflow-hidden bg-slate-950 border border-slate-800 h-64 flex items-center justify-center">
-                        <canvas id="pitchVisualizerCanvas" class="w-full h-full"></canvas>
-                        <div class="absolute top-3 left-3 bg-slate-900/80 px-3 py-1 rounded text-xs font-mono text-turf-400 border border-slate-700" id="pitchCanvasLabel">
-                            4-SEAM FASTBALL | 74 MPH
-                        </div>
-                    </div>
-
-                    <!-- Interactive Pitch Selection Buttons -->
-                    <div class="grid grid-cols-3 gap-3">
-                        <button onclick="selectPitchPreview('fastball')" class="pitch-select-btn p-3 rounded-xl bg-slate-800 hover:bg-turf-600/30 border border-turf-500/50 text-left transition-all active">
-                            <div class="text-xs text-turf-400 font-bold uppercase">4-Seam Fastball</div>
-                            <div class="font-teko text-xl text-white font-bold">72 - 76 MPH</div>
-                            <div class="text-[11px] text-slate-400">High ride, late rise</div>
-                        </button>
-                        <button onclick="selectPitchPreview('curveball')" class="pitch-select-btn p-3 rounded-xl bg-slate-800 hover:bg-turf-600/30 border border-slate-700 text-left transition-all">
-                            <div class="text-xs text-gold-400 font-bold uppercase">12-6 Curveball</div>
-                            <div class="font-teko text-xl text-white font-bold">61 - 64 MPH</div>
-                            <div class="text-[11px] text-slate-400">Sharp vertical drop</div>
-                        </button>
-                        <button onclick="selectPitchPreview('changeup')" class="pitch-select-btn p-3 rounded-xl bg-slate-800 hover:bg-turf-600/30 border border-slate-700 text-left transition-all">
-                            <div class="text-xs text-emerald-400 font-bold uppercase">Circle Changeup</div>
-                            <div class="font-teko text-xl text-white font-bold">63 - 66 MPH</div>
-                            <div class="text-[11px] text-slate-400">Arm-side fade</div>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Pitch Specs Card -->
-                <div class="lg:col-span-5 glass-card p-6 rounded-2xl flex flex-col justify-between space-y-4">
-                    <div>
-                        <div class="text-xs font-rajdhani font-bold uppercase text-turf-400">Pitcher Profile</div>
-                        <h4 class="font-teko text-3xl font-bold text-white uppercase" id="selectedPitchTitle">4-SEAM FASTBALL SPECS</h4>
-                        <p class="text-sm text-slate-300 mt-2" id="selectedPitchDesc">
-                            Primary strikeout pitch. Features high spin efficiency causing late top-zone elevation that generates swings and misses above opponent bats.
-                        </p>
-                    </div>
-
-                    <!-- Metrics Breakdown -->
-                    <div class="space-y-3 font-rajdhani">
-                        <div>
-                            <div class="flex justify-between text-xs font-bold text-slate-300 mb-1">
-                                <span>Spin Rate</span>
-                                <span class="text-turf-400 font-mono" id="selectedPitchSpin">2,150 RPM</span>
-                            </div>
-                            <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-                                <div class="bg-turf-500 h-full rounded-full" id="barSpin" style="width: 82%"></div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <div class="flex justify-between text-xs font-bold text-slate-300 mb-1">
-                                <span>Vertical Break</span>
-                                <span class="text-gold-400 font-mono" id="selectedPitchBreak">16.2 inches</span>
-                            </div>
-                            <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-                                <div class="bg-gold-500 h-full rounded-full" id="barBreak" style="width: 65%"></div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <div class="flex justify-between text-xs font-bold text-slate-300 mb-1">
-                                <span>Command Accuracy</span>
-                                <span class="text-emerald-300 font-mono" id="selectedPitchAcc">91% Strike Zone Rate</span>
-                            </div>
-                            <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-                                <div class="bg-emerald-400 h-full rounded-full" id="barAcc" style="width: 91%"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-800 text-xs text-slate-300 flex items-center gap-3">
-                        <i class="fa-solid fa-bullseye text-2xl text-turf-400"></i>
-                        <span><strong>Scouting Note:</strong> Dominant 2-strike put-away pitch when painted at the top rail of the strike zone.</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tab 2: Catcher Metrics Showcase (Hidden by default) -->
-            <div id="tabCatching" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <!-- Framing Heat Map Graphic -->
-                <div class="lg:col-span-6 glass-card p-6 rounded-2xl space-y-4">
-                    <h4 class="font-teko text-2xl text-white uppercase font-bold flex items-center gap-2">
-                        <i class="fa-solid fa-shield-cat text-gold-400"></i> Strike Framing Heatmap & Command
-                    </h4>
-                    <p class="text-xs text-slate-300">
-                        Calculated border-frame strike conversion rate based on U13 umpire strike-zone metrics.
-                    </p>
-
-                    <!-- Heatmap Grid -->
-                    <div class="bg-slate-950 p-6 rounded-xl border border-slate-800 flex flex-col items-center justify-center space-y-2">
-                        <div class="text-xs font-mono text-slate-400 mb-2">STRIKE ZONE BORDER CONVERSION: 84.5%</div>
-                        <div class="grid grid-cols-3 gap-2 w-64 h-64 border-4 border-slate-600 p-2 rounded bg-slate-900/50">
-                            <div class="bg-emerald-500/60 border border-emerald-400/80 rounded flex items-center justify-center font-bold text-xs">88%</div>
-                            <div class="bg-emerald-600/70 border border-emerald-400/80 rounded flex items-center justify-center font-bold text-xs">92%</div>
-                            <div class="bg-emerald-500/60 border border-emerald-400/80 rounded flex items-center justify-center font-bold text-xs">86%</div>
-                            <div class="bg-emerald-600/70 border border-emerald-400/80 rounded flex items-center justify-center font-bold text-xs">94%</div>
-                            <div class="bg-emerald-500/90 border border-emerald-300 rounded flex items-center justify-center font-bold text-sm text-slate-950 font-black">98%</div>
-                            <div class="bg-emerald-600/70 border border-emerald-400/80 rounded flex items-center justify-center font-bold text-xs">91%</div>
-                            <div class="bg-gold-500/50 border border-gold-400/80 rounded flex items-center justify-center font-bold text-xs">79%</div>
-                            <div class="bg-emerald-500/70 border border-emerald-400/80 rounded flex items-center justify-center font-bold text-xs">89%</div>
-                            <div class="bg-gold-500/50 border border-gold-400/80 rounded flex items-center justify-center font-bold text-xs">78%</div>
-                        </div>
-                        <span class="text-[11px] text-slate-400 pt-2"><i class="fa-solid fa-circle text-emerald-400 text-[8px]"></i> High framing zone • Excellent glove quietness</span>
-                    </div>
-                </div>
-
-                <!-- Pop Time & Blocking Metrics -->
-                <div class="lg:col-span-6 glass-card p-6 rounded-2xl space-y-6 flex flex-col justify-between">
-                    <div>
-                        <div class="text-xs font-rajdhani font-bold uppercase text-gold-400">Behind the Plate Stats</div>
-                        <h4 class="font-teko text-3xl font-bold text-white uppercase">Catcher Defense Commander</h4>
-                        <p class="text-sm text-slate-300 mt-1">
-                            Unmatched transfer speed, footwork efficiency, and wild pitch blocking percentage.
-                        </p>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
-                            <span class="text-xs text-slate-400 font-bold uppercase">Pop Time (2nd Base)</span>
-                            <div class="font-teko text-4xl text-gold-400 font-bold">1.92s</div>
-                            <p class="text-[11px] text-emerald-400">Top 2% in U13 division</p>
-                        </div>
-                        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
-                            <span class="text-xs text-slate-400 font-bold uppercase">Exchange Time</span>
-                            <div class="font-teko text-4xl text-white font-bold">0.68s</div>
-                            <p class="text-[11px] text-slate-400">Glove to hand transfer</p>
-                        </div>
-                        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
-                            <span class="text-xs text-slate-400 font-bold uppercase">Blocking Rate</span>
-                            <div class="font-teko text-4xl text-turf-400 font-bold">96.4%</div>
-                            <p class="text-[11px] text-slate-400">Dirt ball recovery</p>
-                        </div>
-                        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
-                            <span class="text-xs text-slate-400 font-bold uppercase">Passed Balls</span>
-                            <div class="font-teko text-4xl text-emerald-300 font-bold">2</div>
-                            <p class="text-[11px] text-slate-400">In 18 games caught</p>
-                        </div>
-                    </div>
-
-                    <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-800 text-xs text-slate-300">
-                        <i class="fa-solid fa-headset text-gold-400 mr-1"></i> <strong>Game Management:</strong> Trusted by pitching coaches to call games, adjust pitch sequences, and maintain pitcher tempo.
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tab 3: Interactive Equipment Locker (Hidden by default) -->
-            <div id="tabLocker" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Locker Item 1 -->
-                <div onclick="showGearDetail('glove')" class="glass-card p-5 rounded-2xl cursor-pointer hover:border-turf-500 transition-all transform hover:-translate-y-1">
-                    <div class="w-12 h-12 rounded-xl bg-turf-500/20 flex items-center justify-center text-turf-400 text-2xl mb-3">
-                        <i class="fa-solid fa-[#000] fa-mitten"></i>
-                    </div>
-                    <span class="text-xs text-gold-400 font-bold uppercase">Custom Leather</span>
-                    <h5 class="font-teko text-2xl font-bold text-white uppercase">Wilson A2000 Catcher's Mitt (32.5")</h5>
-                    <p class="text-xs text-slate-300 mt-2">Deep pocket with Dual Welting for maximum pitch framing stability and ball retention.</p>
-                </div>
-
-                <!-- Locker Item 2 -->
-                <div onclick="showGearDetail('mask')" class="glass-card p-5 rounded-2xl cursor-pointer hover:border-turf-500 transition-all transform hover:-translate-y-1">
-                    <div class="w-12 h-12 rounded-xl bg-gold-500/20 flex items-center justify-center text-gold-400 text-2xl mb-3">
-                        <i class="fa-solid fa-mask"></i>
-                    </div>
-                    <span class="text-xs text-turf-400 font-bold uppercase">Armor & Defense</span>
-                    <h5 class="font-teko text-2xl font-bold text-white uppercase">Rawlings Velo 2.0 Catchers Set</h5>
-                    <p class="text-xs text-slate-300 mt-2">Custom fitted chest protector & leg guards with high-density impact padding for foul tips.</p>
-                </div>
-
-                <!-- Locker Item 3 -->
-                <div onclick="showGearDetail('bat')" class="glass-card p-5 rounded-2xl cursor-pointer hover:border-turf-500 transition-all transform hover:-translate-y-1">
-                    <div class="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-2xl mb-3">
-                        <i class="fa-solid fa-baseball-bat-ball"></i>
-                    </div>
-                    <span class="text-xs text-emerald-400 font-bold uppercase">Offensive Weapon</span>
-                    <h5 class="font-teko text-2xl font-bold text-white uppercase">Easton Maxum 31" / -10 Composite Bat</h5>
-                    <p class="text-xs text-slate-300 mt-2">Massive sweet spot, seamless carbon construction delivering high exit velocity.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- SECTION 3: BUILT-IN INTERACTIVE BASEBALL MINI-GAME "#28 DUAL-THREAT ARCADE" -->
-        <section id="arcade" class="glass-card-glow p-6 lg:p-8 rounded-3xl space-y-6 relative overflow-hidden">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
-                <div>
-                    <span class="px-2.5 py-1 rounded bg-gold-500/20 text-gold-400 text-xs font-bold uppercase tracking-wider border border-gold-500/30">HTML5 Canvas Game</span>
-                    <h3 class="font-teko text-4xl lg:text-5xl font-black text-white uppercase tracking-tight mt-1">
-                        #28 Dual-Threat Arcade
-                    </h3>
-                    <p class="text-xs text-slate-300">Pitch strikes, catch wild pitches, and throw out runners stealing 2nd base!</p>
-                </div>
-
-                <!-- Mode Switcher & Controls -->
-                <div class="flex flex-wrap items-center gap-2">
-                    <button id="gameModePitching" onclick="setGameMode('pitching')" class="px-4 py-2 rounded-xl bg-turf-500 text-slate-950 font-bold text-xs uppercase tracking-wider shadow-lg transition-all">
-                        <i class="fa-solid fa-baseball mr-1"></i> Pitching Mode
-                    </button>
-                    <button id="gameModeCatching" onclick="setGameMode('catching')" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs uppercase tracking-wider transition-all">
-                        <i class="fa-solid fa-shield-halved mr-1"></i> Catching Mode
-                    </button>
-                    <button onclick="resetGame()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-bold transition-all">
-                        <i class="fa-solid fa-rotate-right"></i> Reset
-                    </button>
-                </div>
-            </div>
-
-            <!-- Scoreboard Banner -->
-            <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 bg-slate-950 p-4 rounded-2xl border border-slate-800 font-rajdhani">
-                <div class="text-center">
-                    <div class="text-[10px] text-slate-400 font-bold uppercase">SCORE</div>
-                    <div class="font-teko text-3xl text-turf-400 font-bold leading-none" id="gameScore">0</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-[10px] text-slate-400 font-bold uppercase">STREAK / COMBO</div>
-                    <div class="font-teko text-3xl text-gold-400 font-bold leading-none" id="gameStreak">0x</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-[10px] text-slate-400 font-bold uppercase">OUTS / SAVES</div>
-                    <div class="font-teko text-3xl text-white font-bold leading-none" id="gameOuts">0</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-[10px] text-slate-400 font-bold uppercase">LEVEL</div>
-                    <div class="font-teko text-3xl text-emerald-300 font-bold leading-none" id="gameLevel">1</div>
-                </div>
-                <div class="text-center col-span-2 sm:col-span-1">
-                    <div class="text-[10px] text-slate-400 font-bold uppercase">HIGH SCORE</div>
-                    <div class="font-teko text-3xl text-gold-400 font-bold leading-none" id="gameHighScoreDisplay">0</div>
-                </div>
-            </div>
-
-            <!-- Arcade Canvas Arena -->
-            <div class="relative w-full rounded-2xl overflow-hidden border-2 border-slate-700 bg-slate-950 flex flex-col items-center justify-center min-h-[380px] sm:min-h-[440px]">
-                <canvas id="gameCanvas" class="w-full h-full cursor-crosshair"></canvas>
-
-                <!-- On-Screen Guidance Overlay -->
-                <div id="gameOverlay" class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center space-y-4">
-                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-turf-500 to-gold-500 flex items-center justify-center text-slate-950 text-3xl font-black shadow-lg">
-                        #28
-                    </div>
-                    <div>
-                        <h4 class="font-teko text-4xl text-white uppercase font-bold tracking-wide" id="overlayTitle">READY TO PLAY?</h4>
-                        <p class="text-slate-300 text-xs sm:text-sm max-w-md mx-auto" id="overlayDesc">
-                            Click or tap anywhere inside the strike zone to pitch fastballs, curveballs, and changeups past batters!
-                        </p>
-                    </div>
-                    <button onclick="startGame()" class="px-8 py-3 rounded-xl bg-gradient-to-r from-turf-500 to-emerald-400 hover:from-turf-400 hover:to-emerald-300 text-slate-950 font-teko text-2xl uppercase tracking-wider font-extrabold shadow-xl transition-all transform active:scale-95">
-                        <i class="fa-solid fa-play mr-2"></i> START GAME
-                    </button>
-                </div>
-            </div>
-
-            <!-- Mobile & Interactive Pitch Buttons Bar for Pitching Mode -->
-            <div id="pitchControls" class="flex flex-wrap items-center justify-between gap-3 bg-slate-900/90 p-4 rounded-2xl border border-slate-800">
-                <div class="flex items-center space-x-2">
-                    <span class="text-xs font-bold text-slate-400 uppercase">Select Pitch:</span>
-                    <button onclick="setPitchType('4-seam')" id="btn4Seam" class="px-3 py-1.5 rounded-lg bg-turf-500 text-slate-950 text-xs font-bold uppercase transition-all">4-Seam Fastball</button>
-                    <button onclick="setPitchType('curve')" id="btnCurve" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-xs font-bold uppercase hover:bg-slate-700 transition-all">Curveball</button>
-                    <button onclick="setPitchType('change')" id="btnChange" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-xs font-bold uppercase hover:bg-slate-700 transition-all">Changeup</button>
-                </div>
-                <div class="text-xs text-slate-400 font-mono">
-                    <i class="fa-solid fa-hand-pointer text-turf-400"></i> Tap canvas target to throw pitch!
-                </div>
-            </div>
-
-            <!-- Special Catching Action Button (Appears during Catching mode) -->
-            <div id="catchActionControls" class="hidden flex items-center justify-between gap-3 bg-slate-900/90 p-4 rounded-2xl border border-slate-800">
-                <button id="btnBlockDirt" onclick="triggerBlockAction()" class="flex-1 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-teko text-xl font-bold uppercase tracking-wider transition-all">
-                    <i class="fa-solid fa-shield"></i> BLOCK DIRT BALL!
-                </button>
-                <button id="btnThrowSecond" onclick="triggerThrowAction()" class="flex-1 py-3 rounded-xl bg-turf-500 hover:bg-turf-400 text-slate-950 font-teko text-xl font-bold uppercase tracking-wider transition-all">
-                    <i class="fa-solid fa-baseball"></i> THROW TO 2ND BASE!
-                </button>
-            </div>
-        </section>
-
-        <!-- SECTION 4: SEASON HIGHLIGHTS & GAME LOG SCHEDULE -->
-        <section id="stats" class="space-y-6">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <span class="text-xs font-rajdhani font-bold uppercase tracking-widest text-turf-400">Game Records</span>
-                    <h3 class="font-teko text-4xl font-black text-white uppercase tracking-wide">2026 Season Game Log</h3>
-                </div>
-                <div class="flex items-center space-x-2 text-xs font-rajdhani font-bold">
-                    <button onclick="filterGameLog('all')" class="game-filter-btn px-3 py-1.5 rounded-lg bg-turf-500 text-slate-950 uppercase font-bold transition-all">All Games</button>
-                    <button onclick="filterGameLog('pitching')" class="game-filter-btn px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 uppercase font-bold hover:text-white transition-all">Pitching Starts</button>
-                    <button onclick="filterGameLog('catching')" class="game-filter-btn px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 uppercase font-bold hover:text-white transition-all">Catching Starts</button>
-                </div>
-            </div>
-
-            <!-- Table Container -->
-            <div class="glass-card rounded-2xl overflow-x-auto border border-slate-800">
-                <table class="w-full text-left text-sm text-slate-300 font-rajdhani">
-                    <thead class="bg-slate-950/80 text-xs font-bold uppercase text-slate-400 border-b border-slate-800">
-                        <tr>
-                            <th class="p-4">Date</th>
-                            <th class="p-4">Opponent</th>
-                            <th class="p-4">Result</th>
-                            <th class="p-4">Primary Role</th>
-                            <th class="p-4">Pitching Stats</th>
-                            <th class="p-4">Catching / Hitting</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-800/60 text-xs sm:text-sm font-semibold" id="gameLogTableBody">
-                        <!-- Game 1 -->
-                        <tr class="hover:bg-slate-800/40 transition-colors game-row pitching">
-                            <td class="p-4 font-mono text-slate-400">Sep 18, 2026</td>
-                            <td class="p-4 text-white font-bold">vs Westside Vipers</td>
-                            <td class="p-4"><span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">W 6-1</span></td>
-                            <td class="p-4 text-turf-400 font-bold">Starting Pitcher</td>
-                            <td class="p-4">5.0 IP, 9 K, 1 ER, 0 BB (Win)</td>
-                            <td class="p-4">2-3, 2 RBI, 1 2B</td>
-                        </tr>
-                        <!-- Game 2 -->
-                        <tr class="hover:bg-slate-800/40 transition-colors game-row catching">
-                            <td class="p-4 font-mono text-slate-400">Sep 12, 2026</td>
-                            <td class="p-4 text-white font-bold">@ Apex Thunder</td>
-                            <td class="p-4"><span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">W 4-2</span></td>
-                            <td class="p-4 text-gold-400 font-bold">Catcher</td>
-                            <td class="p-4 text-slate-500">-</td>
-                            <td class="p-4">2 Caught Stealing, 1-3, HR, 3 RBI</td>
-                        </tr>
-                        <!-- Game 3 -->
-                        <tr class="hover:bg-slate-800/40 transition-colors game-row pitching">
-                            <td class="p-4 font-mono text-slate-400">Sep 05, 2026</td>
-                            <td class="p-4 text-white font-bold">vs Metro Wildcats</td>
-                            <td class="p-4"><span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">W 8-0</span></td>
-                            <td class="p-4 text-turf-400 font-bold">Starting Pitcher</td>
-                            <td class="p-4">6.0 IP, 11 K, 0 ER (Complete Game No-Hitter!)</td>
-                            <td class="p-4">3-4, 1 3B, 2 Runs</td>
-                        </tr>
-                        <!-- Game 4 -->
-                        <tr class="hover:bg-slate-800/40 transition-colors game-row catching">
-                            <td class="p-4 font-mono text-slate-400">Aug 28, 2026</td>
-                            <td class="p-4 text-white font-bold">@ Eastridge Knights</td>
-                            <td class="p-4"><span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">W 5-3</span></td>
-                            <td class="p-4 text-gold-400 font-bold">Catcher / Closer</td>
-                            <td class="p-4">1.0 IP, 2 K (Save)</td>
-                            <td class="p-4">1 CS, 0 Passed Balls, 2-3</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- SECTION 5: HIGHLIGHT GALLERY & TROPHY CABINET -->
-        <section id="gallery" class="space-y-6">
-            <div>
-                <span class="text-xs font-rajdhani font-bold uppercase tracking-widest text-gold-400">Accolades & Photos</span>
-                <h3 class="font-teko text-4xl font-black text-white uppercase tracking-wide">Trophy Cabinet & Highlights</h3>
-            </div>
-
-            <!-- Trophy Grid -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div class="glass-card p-4 rounded-2xl border border-gold-500/30 flex flex-col items-center text-center space-y-2">
-                    <div class="w-12 h-12 rounded-full bg-gold-500/20 flex items-center justify-center text-gold-400 text-2xl">
-                        <i class="fa-solid fa-trophy"></i>
-                    </div>
-                    <h5 class="font-teko text-xl text-white font-bold leading-tight">U13 Tournament MVP</h5>
-                    <p class="text-[11px] text-slate-400">Regional Summer Classic 2026</p>
-                </div>
-
-                <div class="glass-card p-4 rounded-2xl border border-turf-500/30 flex flex-col items-center text-center space-y-2">
-                    <div class="w-12 h-12 rounded-full bg-turf-500/20 flex items-center justify-center text-turf-400 text-2xl">
-                        <i class="fa-solid fa-award"></i>
-                    </div>
-                    <h5 class="font-teko text-xl text-white font-bold leading-tight">No-Hitter Game</h5>
-                    <p class="text-[11px] text-slate-400">11 K's vs Metro Wildcats</p>
-                </div>
-
-                <div class="glass-card p-4 rounded-2xl border border-emerald-500/30 flex flex-col items-center text-center space-y-2">
-                    <div class="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-2xl">
-                        <i class="fa-solid fa-shield-virus"></i>
-                    </div>
-                    <h5 class="font-teko text-xl text-white font-bold leading-tight">Gold Glove Catcher</h5>
-                    <p class="text-[11px] text-slate-400">.986 Fielding Percentage</p>
-                </div>
-
-                <div class="glass-card p-4 rounded-2xl border border-slate-700 flex flex-col items-center text-center space-y-2">
-                    <div class="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 text-2xl" id="arcadeTrophyIcon">
-                        <i class="fa-solid fa-lock"></i>
-                    </div>
-                    <h5 class="font-teko text-xl text-white font-bold leading-tight" id="arcadeTrophyTitle">Arcade Master</h5>
-                    <p class="text-[11px] text-slate-400" id="arcadeTrophyDesc">Score 500+ pts in game</p>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- CUSTOMIZE PROFILE MODAL -->
-    <div id="personalizeModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4">
-        <div class="glass-card max-w-md w-full p-6 rounded-3xl border border-turf-500/40 space-y-5 relative">
-            <button onclick="closePersonalizeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-            <div>
-                <span class="text-xs font-rajdhani font-bold uppercase text-turf-400">Personalize Showcase</span>
-                <h4 class="font-teko text-3xl font-bold text-white uppercase">Player Information</h4>
-            </div>
-
-            <div class="space-y-4 text-sm font-rajdhani">
-                <div>
-                    <label class="block text-xs font-bold uppercase text-slate-300 mb-1">Player Name</label>
-                    <input type="text" id="inputPlayerName" value="Bentley Konrad" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-turf-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold uppercase text-slate-300 mb-1">Team Name</label>
-                    <input type="text" id="inputTeamName" value="Thunder Select" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-turf-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold uppercase text-slate-300 mb-1">Jersey Number</label>
-                    <input type="text" id="inputJerseyNum" value="28" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-turf-500">
-                </div>
-            </div>
-
-            <div class="flex justify-end space-x-3 pt-2">
-                <button onclick="closePersonalizeModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs uppercase">Cancel</button>
-                <button onclick="savePersonalization()" class="px-5 py-2 rounded-xl bg-turf-500 text-slate-950 font-bold text-xs uppercase shadow-lg">Save Changes</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- FOOTER -->
-    <footer class="glass-card border-t border-slate-800 px-4 py-6 mt-12 text-center text-xs text-slate-400 font-rajdhani">
-        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p>© 2026 Bentley Konrad #28 Official Athletic Showcase. All rights reserved.</p>
-            <p class="text-turf-400">Designed for U13 Pitchers & Catchers</p>
-        </div>
-    </footer>
-
-    <!-- JAVASCRIPT LOGIC -->
-    <script>
-        // Audio Engine using Web Audio API
-        let audioCtx = null;
-        let isAudioMuted = true;
-
-        function initAudio() {
-            if (!audioCtx) {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                audioCtx = new AudioContext();
-            }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-        }
-
-        function toggleAudio() {
-            initAudio();
-            isAudioMuted = !isAudioMuted;
-            const icon = document.getElementById('audioIcon');
-            const label = document.getElementById('audioLabel');
-
-            if (isAudioMuted) {
-                icon.className = "fa-solid fa-volume-xmark text-slate-400";
-                label.innerText = "Sound OFF";
-            } else {
-                icon.className = "fa-solid fa-volume-high text-turf-400";
-                label.innerText = "Sound ON";
-                playAudioTone(587.33, 'sine', 0.15, 0.1); // D5 chime
-            }
-        }
-
-        // Synthesize sound effects
-        function playAudioTone(freq, type = 'sine', duration = 0.1, gainVal = 0.2) {
-            if (isAudioMuted || !audioCtx) return;
-            try {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = type;
-                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-                gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start();
-                osc.stop(audioCtx.currentTime + duration);
-            } catch (e) {
-                console.error(e);
-            }
-        }
-
-        // Synthesizer for Glove Pop Sound
-        function playGlovePop() {
-            if (isAudioMuted || !audioCtx) return;
-            try {
-                // Low thump oscillator
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(160, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.12);
-                gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.12);
-            } catch(e){}
-        }
-
-        // Synthesizer for Bat Crack
-        function playBatCrack() {
-            if (isAudioMuted || !audioCtx) return;
-            try {
-                const bufferSize = audioCtx.sampleRate * 0.1;
-                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-                const output = buffer.getChannelData(0);
-                for (let i = 0; i < bufferSize; i++) {
-                    output[i] = Math.random() * 2 - 1;
-                }
-                const whiteNoise = audioCtx.createBufferSource();
-                whiteNoise.buffer = buffer;
-
-                const filter = audioCtx.createBiquadFilter();
-                filter.type = 'bandpass';
-                filter.frequency.setValueAtTime(1000, audioCtx.currentTime);
-
-                const gain = audioCtx.createGain();
-                gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-
-                whiteNoise.connect(filter);
-                filter.connect(gain);
-                gain.connect(audioCtx.destination);
-                whiteNoise.start();
-            } catch(e){}
-        }
-
-        // Pitch Trajectory Simulator Canvas
-        let previewPitchType = 'fastball';
-
-        function initPitchCanvas() {
-            const canvas = document.getElementById('pitchVisualizerCanvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const dpr = window.devicePixelRatio || 1;
-            canvas.width = canvas.clientWidth * dpr;
-            canvas.height = canvas.clientHeight * dpr;
-            ctx.scale(dpr, dpr);
-
-            let t = 0;
-            function drawTrajectory() {
-                const w = canvas.clientWidth;
-                const h = canvas.clientHeight;
-                ctx.clearRect(0, 0, w, h);
-
-                // Draw Strike Zone grid in distance
-                const szWidth = 80;
-                const szHeight = 100;
-                const szX = w - 120;
-                const szY = h / 2 - szHeight / 2;
-
-                ctx.strokeStyle = 'rgba(16, 185, 129, 0.4)';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(szX, szY, szWidth, szHeight);
-
-                // Calculate trajectory line based on pitch type
-                ctx.beginPath();
-                ctx.moveTo(40, h / 2);
-
-                const controlX = w * 0.6;
-                let controlY = h / 2;
-
-                if (previewPitchType === 'fastball') {
-                    controlY = h / 2 - 20; // high straight
-                } else if (previewPitchType === 'curveball') {
-                    controlY = h / 2 + 50; // sharp drop
-                } else if (previewPitchType === 'changeup') {
-                    controlY = h / 2 + 25; // fade
-                }
-
-                ctx.quadraticCurveTo(controlX, controlY, szX + szWidth / 2, szY + szHeight / 2);
-                ctx.strokeStyle = previewPitchType === 'fastball' ? '#34d399' : (previewPitchType === 'curveball' ? '#f59e0b' : '#10b981');
-                ctx.lineWidth = 4;
-                ctx.setLineDash([6, 6]);
-                ctx.stroke();
-                ctx.setLineDash([]);
-
-                // Animated Ball along path
-                t += 0.02;
-                if (t > 1) t = 0;
-
-                const ballX = (1 - t) * (1 - t) * 40 + 2 * (1 - t) * t * controlX + t * t * (szX + szWidth / 2);
-                const ballY = (1 - t) * (1 - t) * (h / 2) + 2 * (1 - t) * t * controlY + t * t * (szY + szHeight / 2);
-
-                ctx.beginPath();
-                ctx.arc(ballX, ballY, 8, 0, Math.PI * 2);
-                ctx.fillStyle = '#ffffff';
-                ctx.shadowColor = '#10b981';
-                ctx.shadowBlur = 10;
-                ctx.fill();
-                ctx.shadowBlur = 0;
-
-                requestAnimationFrame(drawTrajectory);
-            }
-            drawTrajectory();
-        }
-
-        function selectPitchPreview(type) {
-            previewPitchType = type;
-            const label = document.getElementById('pitchCanvasLabel');
-            const title = document.getElementById('selectedPitchTitle');
-            const desc = document.getElementById('selectedPitchDesc');
-            const spin = document.getElementById('selectedPitchSpin');
-            const pBreak = document.getElementById('selectedPitchBreak');
-            const acc = document.getElementById('selectedPitchAcc');
-
-            if (type === 'fastball') {
-                label.innerText = "4-SEAM FASTBALL | 74 MPH";
-                title.innerText = "4-SEAM FASTBALL SPECS";
-                desc.innerText = "Primary strikeout pitch. Features high spin efficiency causing late top-zone elevation that generates swings and misses above opponent bats.";
-                spin.innerText = "2,150 RPM";
-                pBreak.innerText = "16.2 inches";
-                acc.innerText = "91% Strike Zone Rate";
-            } else if (type === 'curveball') {
-                label.innerText = "12-6 CURVEBALL | 63 MPH";
-                title.innerText = "12-6 CURVEBALL SPECS";
-                desc.innerText = "Devastating off-speed breaking ball with sharp 12-to-6 vertical break that tunnels directly off fastball trajectory.";
-                spin.innerText = "2,380 RPM";
-                pBreak.innerText = "22.8 inches";
-                acc.innerText = "84% Strike Zone Rate";
-            } else if (type === 'changeup') {
-                label.innerText = "CIRCLE CHANGEUP | 65 MPH";
-                title.innerText = "CIRCLE CHANGEUP SPECS";
-                desc.innerText = "Arm-side fading changeup thrown with identical arm speed as the fastball, disrupting batter timing and inducing weak grounders.";
-                spin.innerText = "1,620 RPM";
-                pBreak.innerText = "12.4 inches";
-                acc.innerText = "88% Strike Zone Rate";
-            }
-            playAudioTone(440, 'sine', 0.08, 0.1);
-        }
-
-        // ARCADE GAME ENGINE (#28 DUAL-THREAT ARCADE)
-        let gameMode = 'pitching'; // 'pitching' or 'catching'
-        let gameActive = false;
-        let score = 0;
-        let streak = 0;
-        let outs = 0;
-        let level = 1;
-        let highScore = localStorage.getItem('bentley28_highscore') || 0;
-        let activePitchType = '4-seam';
-
-        // Target state
-        let targetX = 200;
-        let targetY = 150;
-        let targetRadius = 30;
-        let targetSpeedX = 1.5;
-        let pitchInProgress = false;
-        let pitchBall = { x: 0, y: 0, targetX: 0, targetY: 0, progress: 0 };
-
-        // Catching mode state
-        let glovePos = { x: 200, y: 200 };
-        let catchBall = { x: 200, y: 50, speed: 3, active: false, isDirt: false, isSteal: false };
-        let stealTimer = 0;
-
-        function setGameMode(mode) {
-            gameMode = mode;
-            const btnP = document.getElementById('gameModePitching');
-            const btnC = document.getElementById('gameModeCatching');
-            const pCtrls = document.getElementById('pitchControls');
-            const cCtrls = document.getElementById('catchActionControls');
-            const title = document.getElementById('overlayTitle');
-            const desc = document.getElementById('overlayDesc');
-
-            if (mode === 'pitching') {
-                btnP.className = "px-4 py-2 rounded-xl bg-turf-500 text-slate-950 font-bold text-xs uppercase tracking-wider shadow-lg transition-all";
-                btnC.className = "px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs uppercase tracking-wider transition-all";
-                pCtrls.classList.remove('hidden');
-                cCtrls.classList.add('hidden');
-                title.innerText = "PITCHING MODE";
-                desc.innerText = "Aim and throw strikes into moving bullseyes! Choose Fastball, Curve, or Changeup.";
-            } else {
-                btnC.className = "px-4 py-2 rounded-xl bg-gold-500 text-slate-950 font-bold text-xs uppercase tracking-wider shadow-lg transition-all";
-                btnP.className = "px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs uppercase tracking-wider transition-all";
-                pCtrls.classList.add('hidden');
-                cCtrls.classList.remove('hidden');
-                title.innerText = "CATCHING MODE";
-                desc.innerText = "Move glove to frame high-speed pitches! Tap BLOCK for wild pitches or THROW to catch stealing runners!";
-            }
-            resetGame();
-        }
-
-        function setPitchType(type) {
-            activePitchType = type;
-            document.getElementById('btn4Seam').className = type === '4-seam' ? "px-3 py-1.5 rounded-lg bg-turf-500 text-slate-950 text-xs font-bold uppercase transition-all" : "px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-xs font-bold uppercase transition-all";
-            document.getElementById('btnCurve').className = type === 'curve' ? "px-3 py-1.5 rounded-lg bg-gold-500 text-slate-950 text-xs font-bold uppercase transition-all" : "px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-xs font-bold uppercase transition-all";
-            document.getElementById('btnChange').className = type === 'change' ? "px-3 py-1.5 rounded-lg bg-emerald-400 text-slate-950 text-xs font-bold uppercase transition-all" : "px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-xs font-bold uppercase transition-all";
-        }
-
-        function startGame() {
-            initAudio();
-            gameActive = true;
-            document.getElementById('gameOverlay').classList.add('hidden');
-            if (gameMode === 'catching') {
-                spawnCatchPitch();
-            }
-        }
-
-        function resetGame() {
-            gameActive = false;
-            score = 0;
-            streak = 0;
-            outs = 0;
-            level = 1;
-            pitchInProgress = false;
-            catchBall.active = false;
-            updateScoreboard();
-            document.getElementById('gameOverlay').classList.remove('hidden');
-        }
-
-        function updateScoreboard() {
-            document.getElementById('gameScore').innerText = score;
-            document.getElementById('gameStreak').innerText = streak + 'x';
-            document.getElementById('gameOuts').innerText = outs;
-            document.getElementById('gameLevel').innerText = level;
-            document.getElementById('gameHighScoreDisplay').innerText = highScore;
-            document.getElementById('statHighScore').innerText = highScore;
-
-            if (highScore >= 500) {
-                document.getElementById('arcadeTrophyIcon').className = "w-12 h-12 rounded-full bg-gold-500/20 flex items-center justify-center text-gold-400 text-2xl";
-                document.getElementById('arcadeTrophyIcon').innerHTML = '<i class="fa-solid fa-trophy"></i>';
-                document.getElementById('arcadeTrophyTitle').innerText = "Arcade Legend Unlocked!";
-                document.getElementById('arcadeTrophyDesc').innerText = "Achieved 500+ score";
-            }
-        }
-
-        // Init Game Loop
-        function initGameCanvas() {
-            const canvas = document.getElementById('gameCanvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-
-            function resize() {
-                const dpr = window.devicePixelRatio || 1;
-                canvas.width = canvas.clientWidth * dpr;
-                canvas.height = canvas.clientHeight * dpr;
-                ctx.scale(dpr, dpr);
-            }
-            resize();
-            window.addEventListener('resize', resize);
-
-            // Click / Touch Handler for Canvas
-            canvas.addEventListener('pointerdown', (e) => {
-                if (!gameActive) return;
-                const rect = canvas.getBoundingClientRect();
-                const clickX = e.clientX - rect.left;
-                const clickY = e.clientY - rect.top;
-
-                if (gameMode === 'pitching' && !pitchInProgress) {
-                    throwPitch(clickX, clickY);
-                } else if (gameMode === 'catching') {
-                    glovePos.x = clickX;
-                    glovePos.y = clickY;
-                }
-            });
-
-            canvas.addEventListener('pointermove', (e) => {
-                if (gameActive && gameMode === 'catching') {
-                    const rect = canvas.getBoundingClientRect();
-                    glovePos.x = e.clientX - rect.left;
-                    glovePos.y = e.clientY - rect.top;
-                }
-            });
-
-            // Main Animation Loop
-            function render() {
-                const w = canvas.clientWidth;
-                const h = canvas.clientHeight;
-                ctx.clearRect(0, 0, w, h);
-
-                if (gameMode === 'pitching') {
-                    drawPitchingMode(ctx, w, h);
-                } else {
-                    drawCatchingMode(ctx, w, h);
-                }
-
-                requestAnimationFrame(render);
-            }
-            render();
-        }
-
-        function drawPitchingMode(ctx, w, h) {
-            // Draw Home Plate & Strike Zone
-            const szW = 140;
-            const szH = 180;
-            const szX = w / 2 - szW / 2;
-            const szY = h / 2 - szH / 2;
-
-            ctx.fillStyle = '#0f172a';
-            ctx.fillRect(0, 0, w, h);
-
-            // Strike Zone box
-            ctx.strokeStyle = '#10b981';
-            ctx.lineWidth = 3;
-            ctx.strokeRect(szX, szY, szW, szH);
-
-            // Inner Grid lines
-            ctx.strokeStyle = 'rgba(16, 185, 129, 0.2)';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(szX + szW / 3, szY); ctx.lineTo(szX + szW / 3, szY + szH);
-            ctx.moveTo(szX + (szW * 2) / 3, szY); ctx.lineTo(szX + (szW * 2) / 3, szY + szH);
-            ctx.moveTo(szX, szY + szH / 3); ctx.lineTo(szX + szW, szY + szH / 3);
-            ctx.moveTo(szX, szY + (szH * 2) / 3); ctx.lineTo(szX + szW, szY + (szH * 2) / 3);
-            ctx.stroke();
-
-            if (gameActive) {
-                // Target movement
-                targetX += targetSpeedX * (1 + level * 0.2);
-                if (targetX < szX + 25 || targetX > szX + szW - 25) {
-                    targetSpeedX *= -1;
-                }
-
-                // Draw Target Bullseye
-                ctx.beginPath();
-                ctx.arc(targetX, targetY, targetRadius, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(245, 158, 11, 0.3)';
-                ctx.fill();
-                ctx.strokeStyle = '#f59e0b';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-
-                ctx.beginPath();
-                ctx.arc(targetX, targetY, 8, 0, Math.PI * 2);
-                ctx.fillStyle = '#f59e0b';
-                ctx.fill();
-            }
-
-            // Pitch Ball animation
-            if (pitchInProgress) {
-                pitchBall.progress += 0.05;
-                const curX = w / 2 + (pitchBall.targetX - w / 2) * pitchBall.progress;
-                let curY = h - 20 + (pitchBall.targetY - (h - 20)) * pitchBall.progress;
-
-                if (activePitchType === 'curve') {
-                    curY += Math.sin(pitchBall.progress * Math.PI) * 30; // Curve arc
-                }
-
-                ctx.beginPath();
-                ctx.arc(curX, curY, 6 + pitchBall.progress * 8, 0, Math.PI * 2);
-                ctx.fillStyle = '#ffffff';
-                ctx.fill();
-
-                if (pitchBall.progress >= 1) {
-                    pitchInProgress = false;
-                    evaluatePitchHit(pitchBall.targetX, pitchBall.targetY);
-                }
-            }
-        }
-
-        function throwPitch(tx, ty) {
-            pitchInProgress = true;
-            pitchBall = { targetX: tx, targetY: ty, progress: 0 };
-            playAudioTone(300, 'sine', 0.1, 0.1);
-        }
-
-        function evaluatePitchHit(px, py) {
-            const dist = Math.hypot(px - targetX, py - targetY);
-            if (dist < targetRadius + 10) {
-                // PERFECT STRIKE / STRIKE OUT
-                score += 50 * (streak + 1);
-                streak++;
-                outs++;
-                playGlovePop();
-                if (outs % 3 === 0) level++;
-            } else {
-                // MISS
-                streak = 0;
-                playAudioTone(180, 'sawtooth', 0.15, 0.2);
-            }
-
-            if (score > highScore) {
-                highScore = score;
-                localStorage.setItem('bentley28_highscore', highScore);
-            }
-            updateScoreboard();
-        }
-
-        function drawCatchingMode(ctx, w, h) {
-            ctx.fillStyle = '#090d16';
-            ctx.fillRect(0, 0, w, h);
-
-            if (!gameActive) return;
-
-            // Draw Catcher's Mitt (Glove)
-            ctx.beginPath();
-            ctx.arc(glovePos.x, glovePos.y, 28, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(245, 158, 11, 0.4)';
-            ctx.fill();
-            ctx.strokeStyle = '#f59e0b';
-            ctx.lineWidth = 3;
-            ctx.stroke();
-
-            // Draw incoming pitch
-            if (catchBall.active) {
-                catchBall.y += catchBall.speed;
-
-                ctx.beginPath();
-                ctx.arc(catchBall.x, catchBall.y, 10, 0, Math.PI * 2);
-                ctx.fillStyle = catchBall.isDirt ? '#ef4444' : '#ffffff';
-                ctx.fill();
-
-                // Dirt pitch indicator text
-                if (catchBall.isDirt) {
-                    ctx.fillStyle = '#ef4444';
-                    ctx.font = '12px Rajdhani';
-                    ctx.fillText('WILD PITCH IN DIRT! TAP BLOCK!', catchBall.x - 70, catchBall.y - 15);
-                }
-
-                // Catch detection
-                const distGlove = Math.hypot(catchBall.x - glovePos.x, catchBall.y - glovePos.y);
-                if (distGlove < 35 && !catchBall.isDirt) {
-                    catchBall.active = false;
-                    score += 30;
-                    streak++;
-                    playGlovePop();
-                    setTimeout(spawnCatchPitch, 800);
-                } else if (catchBall.y > h - 30) {
-                    catchBall.active = false;
-                    streak = 0;
-                    setTimeout(spawnCatchPitch, 800);
-                }
-            }
-            updateScoreboard();
-        }
-
-        function spawnCatchPitch() {
-            if (!gameActive || gameMode !== 'catching') return;
-            catchBall.x = Math.random() * 260 + 70;
-            catchBall.y = 20;
-            catchBall.speed = 3 + level * 0.5;
-            catchBall.isDirt = Math.random() < 0.25;
-            catchBall.active = true;
-        }
-
-        function triggerBlockAction() {
-            if (gameActive && catchBall.active && catchBall.isDirt) {
-                catchBall.active = false;
-                score += 60;
-                streak++;
-                playGlovePop();
-                setTimeout(spawnCatchPitch, 800);
-            }
-        }
-
-        function triggerThrowAction() {
-            if (gameActive && gameMode === 'catching') {
-                score += 100;
-                outs++;
-                playBatCrack();
-                updateScoreboard();
-            }
-        }
-
-        // TAB SWITCHERS & UI INTERACTIVITY
-        function switchArsenalTab(tab) {
-            document.getElementById('tabPitching').classList.add('hidden');
-            document.getElementById('tabCatching').classList.add('hidden');
-            document.getElementById('tabLocker').classList.add('hidden');
-
-            document.getElementById('tabPitchingBtn').className = "px-4 py-2 rounded-lg text-slate-400 hover:text-white uppercase tracking-wider font-bold transition-all";
-            document.getElementById('tabCatchingBtn').className = "px-4 py-2 rounded-lg text-slate-400 hover:text-white uppercase tracking-wider font-bold transition-all";
-            document.getElementById('tabLockerBtn').className = "px-4 py-2 rounded-lg text-slate-400 hover:text-white uppercase tracking-wider font-bold transition-all";
-
-            if (tab === 'pitching') {
-                document.getElementById('tabPitching').classList.remove('hidden');
-                document.getElementById('tabPitchingBtn').className = "px-4 py-2 rounded-lg bg-turf-500 text-slate-950 uppercase tracking-wider font-bold transition-all";
-            } else if (tab === 'catching') {
-                document.getElementById('tabCatching').classList.remove('hidden');
-                document.getElementById('tabCatchingBtn').className = "px-4 py-2 rounded-lg bg-gold-500 text-slate-950 uppercase tracking-wider font-bold transition-all";
-            } else if (tab === 'locker') {
-                document.getElementById('tabLocker').classList.remove('hidden');
-                document.getElementById('tabLockerBtn').className = "px-4 py-2 rounded-lg bg-emerald-500 text-slate-950 uppercase tracking-wider font-bold transition-all";
-            }
-            playAudioTone(520, 'sine', 0.05, 0.05);
-        }
-
-        function showGearDetail(item) {
-            playGlovePop();
-        }
-
-        function filterGameLog(type) {
-            const rows = document.querySelectorAll('.game-row');
-            rows.forEach(r => {
-                if (type === 'all' || r.classList.contains(type)) {
-                    r.style.display = '';
-                } else {
-                    r.style.display = 'none';
-                }
-            });
-        }
-
-        // PERSONALIZE MODAL
-        function openPersonalizeModal() {
-            document.getElementById('personalizeModal').classList.remove('hidden');
-        }
-
-        function closePersonalizeModal() {
-            document.getElementById('personalizeModal').classList.add('hidden');
-        }
-
-        function savePersonalization() {
-            const name = document.getElementById('inputPlayerName').value || "Bentley Konrad";
-            const team = document.getElementById('inputTeamName').value || "Thunder Select";
-            const num = document.getElementById('inputJerseyNum').value || "28";
-
-            document.getElementById('navPlayerName').innerText = name;
-            document.getElementById('navTeamName').innerText = team;
-            document.getElementById('badgePlayerName').innerText = name.toUpperCase();
-
-            closePersonalizeModal();
-            playAudioTone(659.25, 'sine', 0.15, 0.1); // E5 chime
-        }
-
-        // INITIALIZATION ON PAGE LOAD
-        window.onload = function() {
-            initPitchCanvas();
-            initGameCanvas();
-            updateScoreboard();
-        };
-    </script>
+<body>
+
+<div id="game-container">
+  <div id="hud">
+    <div class="hud-card">Score: <span id="score-val" style="color:#10b981">0</span></div>
+    <div class="hud-card">Home Runs: <span id="hr-val" style="color:#f59e0b">0</span></div>
+    <div class="hud-card">Outs: <span id="outs-val" style="color:#ef4444">0 / 10</span></div>
+  </div>
+
+  <div id="start-overlay" class="overlay">
+    <h1>HOME RUN DERBY</h1>
+    <p>Click or press SPACE to swing!</p>
+    <button id="start-btn" class="btn">START DERBY</button>
+  </div>
+
+  <div id="gameover-overlay" class="overlay hidden">
+    <h1>GAME OVER</h1>
+    <p id="final-stats">Total HRs: 0 | Total Distance: 0 ft</p>
+    <button id="restart-btn" class="btn">PLAY AGAIN</button>
+  </div>
+
+  <canvas id="gameCanvas" width="800" height="600"></canvas>
+</div>
+
+<script>
+let audioCtx = null;
+function initAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+}
+
+function playSound(type) {
+  if (!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  if (type === 'hit') {
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.15);
+    gain.gain.setValueAtTime(0.8, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.15);
+  } else if (type === 'hr') {
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.3);
+    gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.3);
+  } else if (type === 'pitch') {
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+    osc.frequency.linearRampToValueAtTime(150, audioCtx.currentTime + 0.2);
+    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.2);
+  }
+}
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+const startOverlay = document.getElementById('start-overlay');
+const gameoverOverlay = document.getElementById('gameover-overlay');
+const startBtn = document.getElementById('start-btn');
+const restartBtn = document.getElementById('restart-btn');
+const scoreVal = document.getElementById('score-val');
+const hrVal = document.getElementById('hr-val');
+const outsVal = document.getElementById('outs-val');
+const finalStats = document.getElementById('final-stats');
+
+let animId = null;
+let gameState = 'START';
+let score = 0;
+let hrs = 0;
+let outs = 0;
+let totalDist = 0;
+
+let ball = null;
+let particles = [];
+let floatingTexts = [];
+let isSwinging = false;
+let swingProgress = 0;
+let pitchTimer = 0;
+
+class Ball {
+  constructor() {
+    this.x = 400;
+    this.y = 280;
+    this.z = 100;
+    this.vx = (Math.random() - 0.5) * 1.5;
+    this.vy = 0;
+    this.vz = -2.2 - Math.random() * 0.8;
+    this.radius = 4;
+    this.hit = false;
+    this.distance = 0;
+  }
+
+  update() {
+    if (!this.hit) {
+      this.x += this.vx;
+      this.z += this.vz;
+      this.radius = Math.max(3, 18 * (1 - this.z / 100));
+      this.y = 280 + (100 - this.z) * 1.8;
+
+      if (this.z <= -10 && !this.hit) {
+        recordOut("STRIKE / OUT");
+        return false;
+      }
+    } else {
+      this.x += this.vx;
+      this.y += this.vy;
+      this.vy += 0.25;
+      this.z += this.vz;
+      this.radius = Math.max(3, this.radius * 0.985);
+
+      if (this.y > 620 || this.radius < 2) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  draw() {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, Math.max(2, this.radius), 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowColor = 'rgba(255,255,255,0.8)';
+    ctx.shadowBlur = 8;
+    ctx.fill();
+    ctx.closePath();
+    ctx.restore();
+  }
+}
+
+function triggerSwing() {
+  if (gameState !== 'PLAYING' || isSwinging) return;
+  initAudio();
+  isSwinging = true;
+  swingProgress = 0;
+
+  if (ball && !ball.hit && ball.z <= 25 && ball.z >= -10) {
+    const timing = ball.z;
+    ball.hit = true;
+    playSound('hit');
+
+    const quality = 1 - Math.abs(timing) / 20;
+    const isHR = quality > 0.45;
+
+    if (isHR) {
+      ball.vx = (ball.x - 400) * 0.3 + (Math.random() - 0.5) * 4;
+      ball.vy = -12 - Math.random() * 5 - quality * 6;
+      ball.vz = 3 + quality * 4;
+      ball.distance = Math.floor(380 + quality * 130 + Math.random() * 30);
+      
+      hrs++;
+      score += 1000 + ball.distance * 2;
+      totalDist += ball.distance;
+      
+      addParticles(ball.x, ball.y, '#f59e0b', 25);
+      addFloatingText(`${ball.distance} FT - HOME RUN!`, ball.x, ball.y - 20, '#f59e0b');
+      playSound('hr');
+    } else {
+      ball.vx = (Math.random() - 0.5) * 8;
+      ball.vy = -4 - Math.random() * 4;
+      ball.vz = 1;
+      recordOut("FOUL / POP OUT");
+    }
+    updateHUD();
+  }
+}
+
+function recordOut(reason) {
+  outs++;
+  addFloatingText(reason, 400, 350, '#ef4444');
+  updateHUD();
+  ball = null;
+  pitchTimer = 60;
+
+  if (outs >= 10) {
+    endGame();
+  }
+}
+
+function addParticles(x, y, color, count) {
+  for (let i = 0; i < count; i++) {
+    particles.push({
+      x, y,
+      vx: (Math.random() - 0.5) * 10,
+      vy: (Math.random() - 0.5) * 10,
+      life: 1.0,
+      color
+    });
+  }
+}
+
+function addFloatingText(text, x, y, color) {
+  floatingTexts.push({ text, x, y, alpha: 1.0, color });
+}
+
+function spawnPitch() {
+  ball = new Ball();
+  playSound('pitch');
+}
+
+function updateHUD() {
+  scoreVal.textContent = score;
+  hrVal.textContent = hrs;
+  outsVal.textContent = `${outs} / 10`;
+}
+
+function drawStadium() {
+  let skyGrad = ctx.createLinearGradient(0, 0, 0, 250);
+  skyGrad.addColorStop(0, '#0f172a');
+  skyGrad.addColorStop(1, '#1e293b');
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(0, 0, 800, 250);
+
+  ctx.fillStyle = '#065f46';
+  ctx.fillRect(0, 220, 800, 60);
+  ctx.fillStyle = '#047857';
+  ctx.fillRect(0, 220, 800, 6);
+
+  let grassGrad = ctx.createLinearGradient(0, 280, 0, 600);
+  grassGrad.addColorStop(0, '#15803d');
+  grassGrad.addColorStop(1, '#166534');
+  ctx.fillStyle = grassGrad;
+  ctx.beginPath();
+  ctx.moveTo(0, 280);
+  ctx.lineTo(800, 280);
+  ctx.lineTo(800, 600);
+  ctx.lineTo(0, 600);
+  ctx.fill();
+
+  ctx.fillStyle = '#9a3412';
+  ctx.beginPath();
+  ctx.ellipse(400, 500, 260, 100, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#7c2d12';
+  ctx.beginPath();
+  ctx.ellipse(400, 310, 35, 12, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.moveTo(400, 520);
+  ctx.lineTo(415, 532);
+  ctx.lineTo(415, 545);
+  ctx.lineTo(385, 545);
+  ctx.lineTo(385, 532);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = '#cbd5e1';
+  ctx.fillRect(396, 282, 8, 22);
+  ctx.beginPath();
+  ctx.arc(400, 278, 5, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawBatter() {
+  ctx.save();
+  ctx.translate(340, 500);
+
+  ctx.fillStyle = '#38bdf8';
+  ctx.fillRect(-10, -40, 20, 45);
+  ctx.fillStyle = '#f87171';
+  ctx.beginPath();
+  ctx.arc(0, -50, 9, 0, Math.PI * 2);
+  ctx.fill();
+
+  let currentBatAngle = -Math.PI / 4;
+  if (isSwinging) {
+    currentBatAngle += swingProgress * Math.PI * 1.2;
+  }
+
+  ctx.save();
+  ctx.translate(5, -25);
+  ctx.rotate(currentBatAngle);
+  ctx.fillStyle = '#d97706';
+  ctx.fillRect(0, -4, 45, 6);
+  ctx.restore();
+
+  ctx.restore();
+}
+
+function gameLoop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  drawStadium();
+
+  if (gameState === 'PLAYING') {
+    if (!ball) {
+      pitchTimer--;
+      if (pitchTimer <= 0) {
+        spawnPitch();
+      }
+    } else {
+      if (!ball.update()) {
+        ball = null;
+        pitchTimer = 50;
+      } else {
+        ball.draw();
+      }
+    }
+
+    if (isSwinging) {
+      swingProgress += 0.12;
+      if (swingProgress >= 1) {
+        isSwinging = false;
+        swingProgress = 0;
+      }
+    }
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+      let p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.life -= 0.03;
+      if (p.life <= 0) {
+        particles.splice(i, 1);
+        continue;
+      }
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = p.life;
+      ctx.fillRect(p.x, p.y, 4, 4);
+      ctx.globalAlpha = 1.0;
+    }
+
+    for (let i = floatingTexts.length - 1; i >= 0; i--) {
+      let ft = floatingTexts[i];
+      ft.y -= 1;
+      ft.alpha -= 0.015;
+      if (ft.alpha <= 0) {
+        floatingTexts.splice(i, 1);
+        continue;
+      }
+      ctx.save();
+      ctx.globalAlpha = ft.alpha;
+      ctx.font = 'bold 22px sans-serif';
+      ctx.fillStyle = ft.color;
+      ctx.textAlign = 'center';
+      ctx.shadowColor = '#000';
+      ctx.shadowBlur = 4;
+      ctx.fillText(ft.text, ft.x, ft.y);
+      ctx.restore();
+    }
+  }
+
+  drawBatter();
+
+  animId = requestAnimationFrame(gameLoop);
+}
+
+function startGame() {
+  // Safely stop any running animation frame to prevent freeze/speedup
+  if (animId) {
+    cancelAnimationFrame(animId);
+    animId = null;
+  }
+
+  gameState = 'PLAYING';
+  score = 0;
+  hrs = 0;
+  outs = 0;
+  totalDist = 0;
+  ball = null;
+  particles = [];
+  floatingTexts = [];
+  pitchTimer = 30;
+  isSwinging = false;
+
+  updateHUD();
+  startOverlay.classList.add('hidden');
+  gameoverOverlay.classList.add('hidden');
+
+  initAudio();
+  gameLoop();
+}
+
+function endGame() {
+  gameState = 'GAMEOVER';
+  if (animId) {
+    cancelAnimationFrame(animId);
+    animId = null;
+  }
+
+  finalStats.textContent = `Total HRs: ${hrs} | Total Distance: ${totalDist} ft | Final Score: ${score}`;
+  gameoverOverlay.classList.remove('hidden');
+}
+
+startBtn.addEventListener('click', startGame);
+restartBtn.addEventListener('click', startGame);
+
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' || e.code === 'Enter') {
+    e.preventDefault();
+    if (gameState === 'PLAYING') {
+      triggerSwing();
+    } else if (gameState === 'START' || gameState === 'GAMEOVER') {
+      startGame();
+    }
+  }
+});
+
+canvas.addEventListener('mousedown', (e) => {
+  e.preventDefault();
+  if (gameState === 'PLAYING') {
+    triggerSwing();
+  }
+});
+
+canvas.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  if (gameState === 'PLAYING') {
+    triggerSwing();
+  }
+});
+</script>
 </body>
 </html>
